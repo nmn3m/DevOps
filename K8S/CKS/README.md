@@ -1,14 +1,55 @@
-## Understanding k8s attack surfaces
+# Table of contents
+1. [Understanding K8S Attack Surfaces](#attack)
+	1. [The 4 C'S ](#4c's)
+2. [Cluster Setup](#cluster)
+	1. [CIS benchmark](#cis)
+	2. [Security Primitives](#securityprimitives)
+	3. [Authentication](#auth)
+	4. [TLS Certificates](#cert)
+	5. [KubeConfig File](#kubeconfig)
+	6. [API Groups](#API)
+	7. [Authorization](#autho)
+	8. [Securing](#security)
+	9. [ kubectl proxy](#proxy)
+	10. [ Dashboard](#dashboard)
+	11. [platform binary](#binary)
+	12. [releases and versions](#release)
+	13. [ network policy](#policy)
+	14. [ingress](#ingress)
+	15. [docker config and security](#docserv)
+3. [System Hardening](#system)
+	1. [latest privilege](#privilege)
+	2. [reduce surface attack](#surfattack)
+4. [Minimizing Microservice Vulnerability](#minimize)
+	1. [security context](#seccont)
+	2. [admission controllers](#admcont)
+	3. [pod security](#podsec)
+	4. [open policy agent](#opa)
+	5. [manage k8s secrets](#k8ssecrete)
+	6. [container sandboxing](#sandbox)
+	7. [container runtime](#containerruntime)
+	8. [pod to pod encryption](#mtls)
+5. [Supply Chain](#chain)
+	1. [ minimize base image footprint](#footprint)
+	2. [ image policy](#imagepolicy)
+	3. [static analysis](#staticanal)
+	4. [scan image](#scaimage)
+6. [Monitoring, Logging and Runtime Security](#watch)
+	1. [behavioral analysis](#behavior)
+	2. [immutable containers](#immucont)
+	3. [audit logs](#audit)
 
-### the 4C's of cloud native security 
+## Understanding k8s attack surfaces <a name="attack"></a>
+
+### the 4C's of cloud native security <a name="4c's"></a>
 
 ![4cs.png](./cks/4c.png)
 
 ---
 
-## Cluster setup && Hardening
+## Cluster setup && Hardening <a name="cluster"></a>
 
-### CIS benchmark (center for internet security)
+### CIS benchmark (center for internet security) <a name="cis"></a>
 - [cis](https://www.cisecurity.org/cis-benchmarks)
 	- using cis cat tool to run assessment on ubuntu. 
 	```sh
@@ -20,7 +61,7 @@
 	-  open source tool from [aqua](https://github.com/aquasecurity/kube-bench) security. 
 ---
 
-### Security primitives
+### Security primitives <a name="securityprimitives"></a>
 - kube-apiserver (the first line of defense)
 	-  who can access the cluster ? AUTHENTICATION
 		-  Files (user & password OR user & token)
@@ -34,7 +75,7 @@
 		-  web hook
 
 ---
-### Authentication
+### Authentication <a name="auth"></a>
 - who access cluster?
 	-  adminstrator ( user )
 	-  developer ( user )
@@ -49,7 +90,7 @@
    ```
    ![serviceaccount](./cks/serviceaccountDIFF.png)
 ---
-### TLS certificate
+### TLS certificate <a name="cert"></a>
 
 - we need to know why and how we configure tls ? 
 	- gurante trust between 2 parts during transactions.
@@ -81,7 +122,7 @@
 	-  ***controller manager*** is responsible for all certificate operations
 	-  talk about sign the certificate [link](https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/#signer-api)
 ---
-### Kube config
+### Kube config <a name="kubeconfig"></a>
 - **$HOME/.kube/config** this is the place for your config file as usual.
 - kube config file has ***3*** sections
 	-  clusters
@@ -90,7 +131,7 @@
 ![configfile](./cks/configfile.png)
 
 ---
-### API Groups
+### API Groups <a name="API"></a>
 #### api
 
 ![core](./cks/coreapi.png)
@@ -101,7 +142,7 @@
 #### Note : you can use kubectl proxy 
 - it will start server on port 8001 and will use the certificate from kube config file on local.
 ---
-### Authorization
+### Authorization <a name="autho"></a>
 - give user or developer some power to create, delete, update things in cluster.
 - you can do authorization using
 	-  RBAC
@@ -127,7 +168,7 @@
 	 kubectl api-resources --namespace=false
 	 ```
 --- 
-### securing the kubelet
+### securing the kubelet <a name="security"></a>
 - how to secure communication between **kubelet** on the ship with **api-server** on master ship.
 	- if you asked about kubelet ?
 		-  you should know the location of config file 
@@ -143,21 +184,21 @@
 	-  you can work on the security of kubelet authorization using 
 		-  --authorization-mode = **AlwaysAllow** change it to **webhook**
 ---
-### kubectl proxy 
+### kubectl proxy <a name="proxy"></a>
 - we use kubectl proxy to run proxy on our local laptop to proxy all trafic to the cluster, so we can access service inside the cluster using this proxy.
  
 ![kubectl proxy](./cks/kubectlproxy.png)
 
 - kubectl port-forward service/nginx  28080:80
 ---
-### K8S dashboard
+### K8S dashboard <a name="dashboard"></a>
 - talk about install it using the K8S docs, expose it and use token to login
 ---
-### Verify platform binaries before deploying
+### Verify platform binaries before <a name="binary"></a>
 - It is important to verify that the downloaded binaries are safe to use by comparing against the checksum hash found in the main page.
 - if anything changed in the binary you can know by comparing the hash 
 --- 
-### K8S releases and versions
+### K8S releases and versions<a name="release"></a>
 ![releases](./cks/releases.png)
 
 #### cluster update process
@@ -234,13 +275,13 @@ systemctl restart kubelet
 ```
 
 ---
-### Network policy && security 
+### Network policy && security  <a name="policy"></a>
 > you use network policy to prevent and allow traffic as you want in specific name space, **note that not all network solution support network policy** 
 
 - talk about ingress and igress rules 
 
 --- 
-### Ingress
+### Ingress <a name="ingress"></a>
 ![ingress](./cks/ingress.png)
 
 #### ingress controller
@@ -266,7 +307,7 @@ k -n ingress-nginx create serviceaccount ingress-nginx-admission
 ```
 
 --- 
-### Docker service configuration && Securing the daemon
+### Docker service configuration && Securing the daemon<a name="docserv"></a>
 > you can use **dockerd  --debug** to run docker in debug mode 
 
 - when docker daemon starts, it listens on unix socket 
@@ -283,11 +324,11 @@ k -n ingress-nginx create serviceaccount ingress-nginx-admission
 ![docker](./cks/authenticatedocker.png)
 
 ---
-## System Hardening
+## System Hardening <a name="system"></a>
 
 > this section is so awesome
 
-### Least privilege principle
+### Least privilege principle <a name="privilege"></a>
 -  Limit access to nodes
 -  RBAC  access
 -  Remove obolete packages & services 
@@ -295,7 +336,7 @@ k -n ingress-nginx create serviceaccount ingress-nginx-admission
 -  Restrict obsolete kernel modules
 -  Identify and fix open ports
 ---
-### Reduce the attack surface
+### Reduce the attack surface<a name="surfattack"></a>
 #### limit node access 
 - there are 4 types of accounts 
 	-  superaccounts like root
@@ -383,13 +424,13 @@ apparmor_parser -q /etc/apparmor.d/usr.sbin.nginx
 ```
 #### Linux capabilities
 ---
-## Minimizing microservice vulnerability
-### security context
+## Minimizing microservice vulnerability <a name="minimize"></a>
+### security context <a name="seccont"></a>
 - you can use security context at `pod level or container level` 
 	- the security context at `container level` overwrite which at `pod level`
 - you can add capabilities `at container level only`
 ---
-### Admission controllers
+### Admission controllers <a name="admcont"></a>
 > help us to implement better security measure to enforce how the cluster is used.
 
 - you can find the file at K8S path edit `kube-apiserver`
@@ -400,11 +441,11 @@ apparmor_parser -q /etc/apparmor.d/usr.sbin.nginx
 #### Note 
 > admission controller is so important< this message for **nmn3m** 
 ---
-### Pod security policy 
+### Pod security policy <a name="podsec"></a>
 - Pod security policies help indefining policies to restrict pods from being created with specific capabilities or privileges.
 - one of the admission controllers that come built in K8S is `pod security policy admission controllers`  by default is not **enabled** 
 ---
-### Open policy agent (OPA)
+### Open policy agent (OPA) <a name="opa"></a>
 > OPA takes care of what action that user can do -> authorization
 
 ##### need to see this 
@@ -417,7 +458,7 @@ apparmor_parser -q /etc/apparmor.d/usr.sbin.nginx
 - What needs to be done to enable `kube-mgmt` to automatically identify policies defined in kubernetes and load them into OPA?
 	- create config map with label  policy set to rego
 ---
-### Manage K8S secrets
+### Manage K8S secrets <a name="k8ssecrete"></a>
 > we use secrets to store sensetive data encoded 
 
 - there are **2** ways to create secrets using:-
@@ -428,7 +469,7 @@ apparmor_parser -q /etc/apparmor.d/usr.sbin.nginx
 
 - [ encrypt data at rest article by K8S docs](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/)
 ---
-### Container sandboxing
+### Container sandboxing <a name="sandbox"></a>
 - talk about isolation in virtual machine **VS** Container
 - isolation in container occur using `process id namespace`
 - Container use syscall to talk with kernel of the host, so if there any vulnerability, you can access a back door to the host machine like `Dirt Cow` vulnerability 
@@ -447,7 +488,7 @@ apparmor_parser -q /etc/apparmor.d/usr.sbin.nginx
 - it needs `nested virtualization` , not all cloud provider support that.
 ![kata](./cks/kata.png)
 ---
-### Container Runtime
+### Container Runtime <a name="containerruntime"></a>
 - there are many container runtime like:-
 	-  runc
 	- runsc -> gVisor use it.
@@ -464,11 +505,11 @@ metadata:
 handler: runsc
 ```
 ---
-### Implement pod to pod encryption by use of mTLS
+### Implement pod to pod encryption by use of mTLS <a name="mtls"></a>
 - we can use third party application like **[Istio](https://istio.io/latest/) and [Linkerd]()** to allow secure service to service communication.
 ---
-## Supply chain security
-### Minimize Base Image Footprint
+## Supply chain security <a name="chain"></a>
+### Minimize Base Image Footprint <a name="footprint"></a>
 - talking about base image vs parent image
 - talking about best practices to build docker image
 	- base image
@@ -479,7 +520,7 @@ handler: runsc
 - talking about private repo and how to make then accessable from K8S
 	-  we use secret using built in **docker-registry**
 --- 
-### Whitelist Allowed Registries – Image Policy Webhook
+### Whitelist Allowed Registries – Image Policy Webhook<a name="imagepolicy"></a>
 - using admission controllers
 #### scenarion 
 >For this lab we are going to deploy a `ImagePolicyWebhook` which will deny us from using images with `latest` tag and ensure that all images have tags.
@@ -504,7 +545,7 @@ vim /etc/kubernetes/pki/admission_kube_config.yaml
 - --admission-control-config-file=/etc/kubernetes/pki/admission_configuration.yaml
 ```
 ---
-### use static analysis for user workloads
+### use static analysis for user workloads <a name="staticanal"></a>
 - using **[kube Sec](https://kubesec.io/)** to make static analysis on defintion files
 - download the binary on control plane 
 ```sh 
@@ -522,13 +563,13 @@ mv kubesec /usr/bin/
 kubesec scan pod.yaml > report.json
 ```
 ---
-### scan image for know vulnerabilities
+### scan image for know vulnerabilities <a name="scaimage"></a>
 - talk about CVE's and CVE's scanner
 -  we will use [Trivy](https://github.com/aquasecurity/trivy) 
 - install it on control plane using docs instructions
 ---
-##  Monitoring, Logging and Runtime Security
-###  Perform behavioral analytics of syscall process
+##  Monitoring, Logging and Runtime Security <a name="watch"></a>
+###  Perform behavioral analytics of syscall process <a name="behavior"></a>
 - talk about the important of monitoring 
 - we will use **[falco](https://falco.org/)** as solution 
 	-  we can install it from documentaion or use `helm` chart as daemon set.
@@ -541,10 +582,10 @@ kubesec scan pod.yaml > report.json
 - dealing with rules, edit it, hot reload using sighub `kill -l HUP`
 ---
 ### Mutable and immutable infrastructure 
-### How to make Container immutable
+### How to make Container immutable <a name="immucont"></a>
 - talking about nginx, if we start it with security context `readonlyfilesystem` it will fail, so we need to mount `volumes` to it, to be able to write data in `/var/run/ && /var/cache`, also if you set privilage to `true` , you can write to container `ex writtting to /proc/sys/swapiness`and make container `mutable` 
 ---
-### Audit Logs to monitor access
+### Audit Logs to monitor access<a name="audit"></a>
 > auditting is disable by default in K8S 
 
 - we write audit policy for kube-apiserver and make it enable to be aplicable.
